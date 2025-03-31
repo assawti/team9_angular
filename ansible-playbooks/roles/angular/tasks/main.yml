@@ -1,0 +1,14 @@
+---
+# tasks file for angular
+
+---
+- name: Install Node.js
+  apt:
+    name: nodejs
+    state: present
+
+- name: Install Angular CLI
+  npm:
+    name: "@angular/cli"
+    global: yes
+...

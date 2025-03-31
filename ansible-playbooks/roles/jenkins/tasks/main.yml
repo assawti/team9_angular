@@ -1,0 +1,21 @@
+---
+# tasks file for jenkins
+
+---
+- name: Install Java 17
+  yum:
+    name: java-17-openjdk
+    state: present
+
+- name: Install Jenkins
+  shell: |
+    wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+    yum install -y jenkins
+
+- name: Start Jenkins
+  service:
+    name: jenkins
+    state: started
+    enabled: yes
+...
