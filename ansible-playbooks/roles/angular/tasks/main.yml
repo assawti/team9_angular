@@ -1,7 +1,7 @@
 ---
 # tasks file for angular
 
----
+
 - name: Install Node.js
   apt:
     name: nodejs

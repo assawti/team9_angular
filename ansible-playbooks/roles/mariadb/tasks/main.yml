@@ -1,6 +1,6 @@
 ---
 # tasks file for mariadb
----
+
 - name: Install MariaDB Server
   apt:
     name: mariadb-server

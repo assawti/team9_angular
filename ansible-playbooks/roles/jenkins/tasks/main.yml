@@ -1,17 +1,31 @@
 ---
 # tasks file for jenkins
 
----
-- name: Install Java 17
+- name: Install Amazon Corretto 17
   yum:
-    name: java-17-openjdk
+    name: java-17-amazon-corretto
     state: present
 
+- name: Add Jenkins repository
+  shell: wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+  args:
+    creates: /etc/yum.repos.d/jenkins.repo
+
+- name: Import Jenkins GPG key
+  shell: rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+  ignore_errors: yes
+
+- name: Disable GPG check for Jenkins 
+  lineinfile:
+    path: /etc/yum.repos.d/jenkins.repo
+    regexp: '^gpgcheck=1'
+    line: 'gpgcheck=0'
+
 - name: Install Jenkins
-  shell: |
-    wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
-    rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
-    yum install -y jenkins
+  yum:
+    name: jenkins
+    state: present
+    disable_gpg_check: yes
 
 - name: Start Jenkins
   service:
