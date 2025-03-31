@@ -3,6 +3,7 @@
   hosts: all
   become: yes
   roles:
+    - role: ansible-playbooks/roles/apache
     - role: ansible-playbooks/roles/jenkins
     - role: ansible-playbooks/roles/angular
     - role: ansible-playbooks/roles/mariadb
