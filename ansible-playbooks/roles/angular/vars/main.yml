@@ -1,2 +1,5 @@
 ---
 # vars file for angular
+angular_server_name: "44.211.246.156" 
+
+...

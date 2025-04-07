@@ -1,35 +1,42 @@
 ---
 # tasks file for jenkins
 
-- name: Install Amazon Corretto 17
+# Install Java on Amazon Linux (Corretto 17) - Jenkins Master & Slave
+- name: Install Java on Amazon Linux (Corretto 17)
   yum:
     name: java-17-amazon-corretto
     state: present
+  when:
+    - ansible_facts['distribution'] == 'Amazon'
+    - inventory_hostname in ['jenkins-master', 'jenkins-slave']
 
-- name: Add Jenkins repository
-  shell: wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
-  args:
-    creates: /etc/yum.repos.d/jenkins.repo
+# Add Jenkins Repository for Amazon Linux (Jenkins Master & Slave)
+- name: Add Jenkins repository for Amazon Linux
+  yum_repository:
+    name: jenkins
+    description: Jenkins Yum Repo
+    baseurl: https://pkg.jenkins.io/redhat-stable
+    gpgkey: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    gpgcheck: yes
+  when:
+    - ansible_facts['distribution'] == 'Amazon'
+    - inventory_hostname in ['jenkins-master', 'jenkins-slave']
 
-- name: Import Jenkins GPG key
-  shell: rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
-  ignore_errors: yes
-
-- name: Disable GPG check for Jenkins 
-  lineinfile:
-    path: /etc/yum.repos.d/jenkins.repo
-    regexp: '^gpgcheck=1'
-    line: 'gpgcheck=0'
-
-- name: Install Jenkins
+# Install Jenkins on Amazon Linux (Jenkins Master & Slave)
+- name: Install Jenkins on Amazon Linux
   yum:
     name: jenkins
     state: present
-    disable_gpg_check: yes
+  when:
+    - ansible_facts['distribution'] == 'Amazon'
+    - inventory_hostname in ['jenkins-master', 'jenkins-slave']
 
-- name: Start Jenkins
+# Start and Enable Jenkins Service on Jenkins Servers
+- name: Ensure Jenkins is Started and Enabled
   service:
     name: jenkins
     state: started
     enabled: yes
+  when:
+    - inventory_hostname in ['jenkins-master', 'jenkins-slave']
 ...

@@ -1,0 +1,10 @@
+<VirtualHost *:80>
+    DocumentRoot /var/www/html/angular/current
+    ServerName {{ angular_server_name }}
+
+    <Directory /var/www/html/angular/current>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>

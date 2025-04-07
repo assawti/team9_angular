@@ -1,0 +1,21 @@
+---
+
+- name: Deploy Apache Virtual Host Configuration for Angular
+  template:
+    src: angular-app.conf.j2
+    dest: /etc/apache2/sites-available/angular-app.conf
+  notify:
+    - Reload Apache
+
+- name: Enable Angular Site
+  command: a2ensite angular-app.conf
+  notify:
+    - Reload Apache
+
+- name: Reload Apache
+  service:
+    name: apache2
+    state: reloaded
+
+
+...

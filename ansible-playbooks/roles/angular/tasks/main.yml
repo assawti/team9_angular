@@ -1,14 +1,62 @@
 ---
-# tasks file for angular
+- name: Install Node.js and npm on Ubuntu
+  ansible.builtin.apt:
+    name:
+      - nodejs
+      - npm
+    state: present
+    update_cache: yes
+  become: yes
+  when: ansible_facts['os_family'] == 'Debian' and ansible_facts['distribution'] == 'Ubuntu'
 
-
-- name: Install Node.js
-  apt:
+- name: Install Node.js on Amazon Linux
+  yum:
     name: nodejs
     state: present
+  when: ansible_facts['os_family'] == 'RedHat' and ansible_facts['distribution'] == 'Amazon'
 
-- name: Install Angular CLI
+- name: Install Angular CLI on Ubuntu
   npm:
     name: "@angular/cli"
     global: yes
+  become: yes  # Added for consistency
+  when: ansible_facts['os_family'] == 'Debian' and ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Debug Ansible Facts (optional)
+  ansible.builtin.debug:
+    var: ansible_facts
+  when: ansible_facts['os_family'] == 'Debian' and ansible_facts['distribution'] == 'Ubuntu'
+
+- name: Ensure Angular deploy directory exists
+  ansible.builtin.file:
+    path: /var/www/html/angular
+    state: directory
+    mode: '0755'
+    owner: "{{ 'apache' if ansible_os_family == 'RedHat' else 'www-data' }}"
+    group: "{{ 'apache' if ansible_os_family == 'RedHat' else 'www-data' }}"
+  become: yes
+
+- name: Extract Angular Build
+  unarchive:
+    src: /tmp/angular_build.tar.gz
+    dest: /var/www/html/angular/
+    remote_src: yes
+  become: yes
+
+- name: Set build_version fact
+  ansible.builtin.set_fact:
+    build_version: "teamangular9/browser"  # Matches tarball structure
+
+- name: Symlink to Current Build
+  ansible.builtin.file:
+    src: "/var/www/html/angular/{{ build_version }}"
+    dest: "/var/www/html/angular/current"
+    state: link
+  become: yes
+
+- name: Restart Apache
+  ansible.builtin.service:
+    name: "{{ 'httpd' if ansible_os_family == 'RedHat' else 'apache2' }}"
+    state: restarted
+  become: yes
 ...

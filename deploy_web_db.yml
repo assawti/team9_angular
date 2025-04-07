@@ -1,0 +1,14 @@
+---
+- name: Deploy MariaDB on database server
+  hosts: database
+  become: yes
+  roles:
+    - ansible-playbooks/roles/mariadb
+
+- name: Deploy Apache and Angular app on web server
+  hosts: web
+  become: yes
+  roles:
+    - ansible-playbooks/roles/apache
+    - ansible-playbooks/roles/angular
+...

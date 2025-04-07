@@ -1,2 +1,8 @@
 ---
-# handlers file for mariadb
+
+- name: Restart MariaDB
+  service:
+    name: mariadb
+    state: restarted
+  become: yes
+...
