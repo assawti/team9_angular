@@ -1,0 +1,37 @@
+---
+- name: Configure Jenkins Servers
+  hosts: jenkins-master, jenkins-slave
+  become: yes
+  roles:
+    - ansible-playbooks/roles/apache
+    - ansible-playbooks/roles/jenkins
+  handlers:
+    - name: restart apache
+      ansible.builtin.service:
+        name: httpd  # Amazon Linux uses 'httpd'
+        state: restarted
+
+- name: Configure Database Server
+  hosts: mariadb-server
+  become: yes
+  roles:
+    - ansible-playbooks/roles/mariadb
+
+- name: Configure Angular Server
+  hosts: angular-server
+  become: yes
+  pre_tasks:
+    - name: Copy Angular build file to remote server
+      ansible.builtin.copy:
+        src: /home/ubuntu/team9_angular/teamangular9/angular_build.tar.gz
+        dest: /tmp/angular_build.tar.gz
+        mode: '0644'
+  roles:
+    - ansible-playbooks/roles/apache
+    - ansible-playbooks/roles/angular
+  handlers:
+    - name: restart apache
+      ansible.builtin.service:
+        name: apache2  # Ubuntu uses 'apache2'
+        state: restarted
+...

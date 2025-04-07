@@ -1,0 +1,42 @@
+---
+# tasks file for jenkins
+
+# Install Java on Amazon Linux (Corretto 17) - Jenkins Master & Slave
+- name: Install Java on Amazon Linux (Corretto 17)
+  yum:
+    name: java-17-amazon-corretto
+    state: present
+  when:
+    - ansible_facts['distribution'] == 'Amazon'
+    - inventory_hostname in ['jenkins-master', 'jenkins-slave']
+
+# Add Jenkins Repository for Amazon Linux (Jenkins Master & Slave)
+- name: Add Jenkins repository for Amazon Linux
+  yum_repository:
+    name: jenkins
+    description: Jenkins Yum Repo
+    baseurl: https://pkg.jenkins.io/redhat-stable
+    gpgkey: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    gpgcheck: yes
+  when:
+    - ansible_facts['distribution'] == 'Amazon'
+    - inventory_hostname in ['jenkins-master', 'jenkins-slave']
+
+# Install Jenkins on Amazon Linux (Jenkins Master & Slave)
+- name: Install Jenkins on Amazon Linux
+  yum:
+    name: jenkins
+    state: present
+  when:
+    - ansible_facts['distribution'] == 'Amazon'
+    - inventory_hostname in ['jenkins-master', 'jenkins-slave']
+
+# Start and Enable Jenkins Service on Jenkins Servers
+- name: Ensure Jenkins is Started and Enabled
+  service:
+    name: jenkins
+    state: started
+    enabled: yes
+  when:
+    - inventory_hostname in ['jenkins-master', 'jenkins-slave']
+...

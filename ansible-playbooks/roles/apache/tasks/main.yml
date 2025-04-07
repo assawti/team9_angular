@@ -1,0 +1,97 @@
+---
+# tasks file for Apache
+
+# Skip Apache installation if it's already installed on Jenkins Master & Slave
+- name: Check if Apache is installed on Jenkins Master & Slave
+  stat:
+    path: /etc/httpd
+  register: apache_check
+  when: inventory_hostname in ['jenkins-master', 'jenkins-slave']
+
+# Install Apache on Amazon Linux (Jenkins Master & Slave) only if not installed
+- name: Install Apache on Amazon Linux (Jenkins Master & Slave)
+  yum:
+    name: httpd
+    state: present
+  when:
+    - ansible_facts['distribution'] == 'Amazon'
+    - inventory_hostname in ['jenkins-master', 'jenkins-slave']
+    - apache_check.stat.exists == False
+
+# Install Apache on Amazon Linux (General) if not already installed
+- name: Install Apache on Amazon Linux
+  yum:
+    name: httpd
+    state: present
+  when: ansible_facts['distribution'] == 'Amazon' and inventory_hostname not in ['jenkins-master', 'jenkins-slave']
+
+# Start and Enable Apache on Ubuntu
+- name: Start and Enable Apache on Ubuntu
+  service:
+    name: apache2
+    state: started
+    enabled: yes
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+# Start and Enable Apache on Amazon Linux
+- name: Start and Enable Apache on Amazon Linux
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+  when: ansible_facts['distribution'] == 'Amazon' and inventory_hostname not in ['jenkins-master', 'jenkins-slave']
+
+# Ensure Apache is started on Jenkins Master & Slave (no reinstall)
+- name: Ensure Apache is started on Jenkins Master & Slave
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+  when: inventory_hostname in ['jenkins-master', 'jenkins-slave'] and apache_check.stat.exists == True
+
+# Create Angular Web Root Directory on Amazon Linux
+- name: Create Angular Web Root Directory (Amazon Linux)
+  file:
+    path: /var/www/html/angular
+    state: directory
+    owner: apache
+    group: apache
+    mode: '0755'
+  when: ansible_facts['distribution'] == 'Amazon'
+
+# Create Angular Web Root Directory on Ubuntu
+- name: Create Angular Web Root Directory (Ubuntu)
+  file:
+    path: /var/www/html/angular
+    state: directory
+    owner: www-data
+    group: www-data
+    mode: '0755'
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+# Deploy Apache Virtual Host for Angular (Ubuntu)
+- name: Deploy Apache Virtual Host for Angular (Ubuntu)
+  template:
+    src: angular.conf.j2
+    dest: /etc/apache2/sites-available/angular.conf
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+# Deploy Apache Virtual Host for Angular (Amazon Linux)
+- name: Deploy Apache Virtual Host for Angular (Amazon Linux)
+  template:
+    src: angular.conf.j2
+    dest: /etc/httpd/conf.d/angular.conf
+  when: ansible_facts['distribution'] == 'Amazon'
+
+# Enable Angular Virtual Host (Ubuntu)
+- name: Enable Angular Virtual Host (Ubuntu)
+  command: a2ensite angular.conf
+  when: ansible_facts['distribution'] == 'Ubuntu'
+
+# Reload Apache on Ubuntu
+- name: Reload Apache on Ubuntu
+  service:
+    name: apache2
+    state: reloaded
+  when: ansible_facts['distribution'] == 'Ubuntu'
+...
